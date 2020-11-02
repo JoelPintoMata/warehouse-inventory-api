@@ -3,7 +3,6 @@ package com.datawarehouse.product.controller;
 import com.datawarehouse.article.exception.ArticleNotFoundException;
 import com.datawarehouse.article.stock.exception.InsufficientStockException;
 import com.datawarehouse.product.dto.ProductDTO;
-import com.datawarehouse.product.entity.ProductEntity;
 import com.datawarehouse.product.exception.ProductNotFoundException;
 import com.datawarehouse.product.service.ProductService;
 import org.slf4j.Logger;
