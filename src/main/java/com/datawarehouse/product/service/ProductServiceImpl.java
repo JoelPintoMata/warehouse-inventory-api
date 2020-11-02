@@ -48,18 +48,18 @@ public class ProductServiceImpl implements ProductService {
         Iterator<ProductEntity> iterator = productEntityIterable.iterator();
         while(iterator.hasNext()) {
             ProductEntity productEntity = iterator.next();
-
-            ProductDTO productDTO = new ProductDTO();
-            productDTO.setId(productEntity.getId());
-            productDTO.setName(productEntity.getName());
             long quantity = 0L;
             try {
                 quantity = getQuantity(productEntity);
             } catch (Exception e) {
                 LOGGER.warn(String.format("Could not calculate product_id %s availability", productEntity.getId()), e);
             }
-            productDTO.setQuantity(quantity);
-            result.add(productDTO);
+            result.add(new ProductDTO.ProductDTOBuilder().
+                    setId(productEntity.getId()).
+                    setName(productEntity.getName()).
+                    setQuantity(quantity).
+                    build()
+            );
         }
         return result;
     }
@@ -76,11 +76,12 @@ public class ProductServiceImpl implements ProductService {
             throw new ProductNotFoundException(id);
         }
 
-        ProductDTO productDTO = new ProductDTO();
-        productDTO.setId(productEntityOptional.get().getId());
-        productDTO.setName(productEntityOptional.get().getName());
-        productDTO.setQuantity(getQuantity(productEntityOptional.get()));
-        return Optional.of(productDTO);
+        return Optional.of(new ProductDTO.ProductDTOBuilder().
+                setId(productEntityOptional.get().getId()).
+                setName(productEntityOptional.get().getName()).
+                setQuantity(getQuantity(productEntityOptional.get())).
+                build()
+        );
     }
 
     /**
