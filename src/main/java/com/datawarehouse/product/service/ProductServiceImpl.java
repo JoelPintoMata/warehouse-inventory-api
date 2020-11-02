@@ -48,16 +48,10 @@ public class ProductServiceImpl implements ProductService {
         Iterator<ProductEntity> iterator = productEntityIterable.iterator();
         while(iterator.hasNext()) {
             ProductEntity productEntity = iterator.next();
-            long quantity = 0L;
-            try {
-                quantity = getQuantity(productEntity);
-            } catch (Exception e) {
-                LOGGER.warn(String.format("Could not calculate product_id %s availability", productEntity.getId()), e);
-            }
             result.add(new ProductDTO.ProductDTOBuilder().
                     setId(productEntity.getId()).
                     setName(productEntity.getName()).
-                    setQuantity(quantity).
+                    setQuantity(getQuantity(productEntity)).
                     build()
             );
         }
@@ -76,6 +70,22 @@ public class ProductServiceImpl implements ProductService {
             throw new ProductNotFoundException(id);
         }
 
+        ProductEntity productEntity = productEntityOptional.get();
+        for(ProductArticleEntity productArticleEntity : productEntity.getProductArticleEntity()) {
+            Optional<ArticleEntity> articleEntityOptional = articleRepository.findByArticleId(productArticleEntity.getArticleId());
+            if(!articleEntityOptional.isPresent()) {
+                throw new ArticleNotFoundException(productArticleEntity.getArticleId());
+            }
+            if(articleEntityOptional.get().getStock() == null ||
+                    articleEntityOptional.get().getStock().getStock() < productArticleEntity.getAmountOf()) {
+                throw new InsufficientStockException(productArticleEntity.getArticleId());
+            }
+            articleRepository.decreaseStock(productArticleEntity.getArticleId(), productArticleEntity.getAmountOf());
+            LOGGER.info(String.format("article_id %s decreased from %s to %s", articleEntityOptional.get().getArticleId(),
+                    articleEntityOptional.get().getStock().getStock().intValue(),
+                    articleEntityOptional.get().getStock().getStock().intValue() - productArticleEntity.getAmountOf()));
+        }
+
         return Optional.of(new ProductDTO.ProductDTOBuilder().
                 setId(productEntityOptional.get().getId()).
                 setName(productEntityOptional.get().getName()).
@@ -88,33 +98,27 @@ public class ProductServiceImpl implements ProductService {
      * Calculates this product available quantity
      * @param productEntity the product as in database
      * @return the available quantity in stock
-     * @throws ArticleNotFoundException
-     * @throws InsufficientStockException
      */
-    private Long getQuantity(ProductEntity productEntity) throws ArticleNotFoundException, InsufficientStockException {
+    private Long getQuantity(ProductEntity productEntity) {
         double thisProductQuantity = -1;
         for(ProductArticleEntity productArticleEntity : productEntity.getProductArticleEntity()) {
             Optional<ArticleEntity> articleEntityOptional = articleRepository.findByArticleId(productArticleEntity.getArticleId());
             if(!articleEntityOptional.isPresent()) {
-                throw new ArticleNotFoundException(productArticleEntity.getArticleId());
+                thisProductQuantity = 0L;
+                break;
             }
             if(articleEntityOptional.get().getStock() == null ||
                     articleEntityOptional.get().getStock().getStock() < productArticleEntity.getAmountOf()) {
-                throw new InsufficientStockException(productArticleEntity.getArticleId());
+                thisProductQuantity = 0L;
+                break;
             }
 
             // the product availability is the min availability of each the product articles
             double thisQuantity = Math.floor(articleEntityOptional.get().getStock().getStock() /
                     productArticleEntity.getAmountOf());
-            if(thisProductQuantity == -1) {
-                thisProductQuantity = thisQuantity;
-            } else {
-                thisProductQuantity = Math.min(thisProductQuantity, thisQuantity);
-            }
-            articleRepository.decreaseStock(productArticleEntity.getArticleId(), productArticleEntity.getAmountOf());
-            LOGGER.info(String.format("article_id %s decreased from %s to %s", articleEntityOptional.get().getArticleId(),
-                    articleEntityOptional.get().getStock().getStock().intValue(),
-                    articleEntityOptional.get().getStock().getStock().intValue() - productArticleEntity.getAmountOf()));
+            thisProductQuantity = thisProductQuantity == -1 ?
+                    thisQuantity :
+                    Math.min(thisProductQuantity, thisQuantity);
         }
         return Long.valueOf((long) thisProductQuantity);
     }
