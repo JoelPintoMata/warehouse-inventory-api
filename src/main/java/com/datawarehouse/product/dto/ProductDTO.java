@@ -11,11 +11,17 @@ public class ProductDTO {
 
     private Long quantity;
 
+    private ProductDTO(Long id, String name, Long quantity) {
+        this.id = id;
+        this.name = name;
+        this.quantity = quantity;
+    }
+
     public Long getId() {
         return this.id;
     }
 
-    public void setId(final Long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -23,7 +29,7 @@ public class ProductDTO {
         return this.name;
     }
 
-    public void setName(final String name) {
+    public void setName(String name) {
         this.name = name;
     }
 
@@ -31,7 +37,38 @@ public class ProductDTO {
         return this.quantity;
     }
 
-    public void setQuantity(final Long quantity) {
+    public void setQuantity(Long quantity) {
         this.quantity = quantity;
+    }
+
+    /**
+     * Product DTO builder
+     */
+    public static class ProductDTOBuilder {
+
+        private Long id;
+
+        private String name;
+
+        private Long quantity;
+
+        public ProductDTOBuilder setId(Long id) {
+            this.id = id;
+            return this;
+        }
+
+        public ProductDTOBuilder setName(String name) {
+            this.name = name;
+            return this;
+        }
+
+        public ProductDTOBuilder setQuantity(Long quantity) {
+            this.quantity = quantity;
+            return this;
+        }
+
+        public ProductDTO build() {
+            return new ProductDTO(id, name, quantity);
+        }
     }
 }
