@@ -46,11 +46,13 @@ public class ProductControllerTest {
     @Test
     public void givenProducts_whenGetAvailability_thenRetrieveProducts() throws Exception {
         List<ProductDTO> productDTOList = new ArrayList<>();
-        ProductDTO productDTO1 = new ProductDTO();
-        productDTO1.setName("name 1");
+        ProductDTO productDTO1 = new ProductDTO.ProductDTOBuilder().
+                setName("name 1").
+                build();
         productDTOList.add(productDTO1);
-        ProductDTO productDTO2 = new ProductDTO();
-        productDTO2.setName("name 2");
+        ProductDTO productDTO2 = new ProductDTO.ProductDTOBuilder().
+                setName("name 2").
+                build();
         productDTOList.add(productDTO2);
 
         given(productService.availability())
@@ -65,9 +67,10 @@ public class ProductControllerTest {
     public void givenProductId_whenSellProduct_thenOk() throws
             Exception {
         List<ProductDTO> productEntityList = new ArrayList<>();
-        ProductDTO productDTO = new ProductDTO();
-        productDTO.setId(999L);
-        productDTO.setName("name 1");
+        ProductDTO productDTO = new ProductDTO.ProductDTOBuilder().
+                setId(999L).
+                setName("name 1").
+                build();
         productEntityList.add(productDTO);
 
         given(productService.sell(999L))
