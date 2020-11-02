@@ -32,6 +32,7 @@ public class InventoryArticlesDataLoaderImpl implements DataLoader {
                                             DataLoaderManager dataLoaderManager,
                                             ArticleRepository articleRepository) {
         this.objectMapper = objectMapper;
+        // Observer design pattern where this loader registers itself in the load manager
         dataLoaderManager.getLoaders().add(this);
         this.articleRepository = articleRepository;
     }
