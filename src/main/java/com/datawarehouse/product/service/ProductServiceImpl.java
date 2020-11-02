@@ -48,33 +48,17 @@ public class ProductServiceImpl implements ProductService {
         Iterator<ProductEntity> iterator = productEntityIterable.iterator();
         while(iterator.hasNext()) {
             ProductEntity productEntity = iterator.next();
-            double thisProductQuantity = -1;
-            for(ProductArticleEntity productArticleEntity : productEntity.getProductArticleEntity()) {
-                Optional<ArticleEntity> articleEntityOptional = articleRepository.findByArticleId(productArticleEntity.getArticleId());
-                if (!articleEntityOptional.isPresent()) {
-                    thisProductQuantity = 0;
-                    break;
-                }
-                if (articleEntityOptional.get().getStock() == null ||
-                        articleEntityOptional.get().getStock().getStock() < productArticleEntity.getAmountOf()) {
-                    thisProductQuantity = 0;
-                    break;
-                }
 
-                // the product availability is the min availability of each the product articles
-                double thisQuantity = Math.floor(articleEntityOptional.get().getStock().getStock() /
-                        productArticleEntity.getAmountOf());
-                if(thisProductQuantity == -1) {
-                    thisProductQuantity = thisQuantity;
-                } else {
-                    thisProductQuantity = Math.min(thisProductQuantity, thisQuantity);
-                }
-
-            }
             ProductDTO productDTO = new ProductDTO();
             productDTO.setId(productEntity.getId());
             productDTO.setName(productEntity.getName());
-            productDTO.setQuantity((long)thisProductQuantity);
+            long quantity = 0L;
+            try {
+                quantity = getQuantity(productEntity);
+            } catch (Exception e) {
+                LOGGER.warn(String.format("Could not calculate product_id %s availability", productEntity.getId()), e);
+            }
+            productDTO.setQuantity(quantity);
             result.add(productDTO);
         }
         return result;
@@ -92,8 +76,23 @@ public class ProductServiceImpl implements ProductService {
             throw new ProductNotFoundException(id);
         }
 
+        ProductDTO productDTO = new ProductDTO();
+        productDTO.setId(productEntityOptional.get().getId());
+        productDTO.setName(productEntityOptional.get().getName());
+        productDTO.setQuantity(getQuantity(productEntityOptional.get()));
+        return Optional.of(productDTO);
+    }
+
+    /**
+     * Calculates this product available quantity
+     * @param productEntity the product as in database
+     * @return the available quantity in stock
+     * @throws ArticleNotFoundException
+     * @throws InsufficientStockException
+     */
+    private Long getQuantity(ProductEntity productEntity) throws ArticleNotFoundException, InsufficientStockException {
         double thisProductQuantity = -1;
-        for(ProductArticleEntity productArticleEntity : productEntityOptional.get().getProductArticleEntity()) {
+        for(ProductArticleEntity productArticleEntity : productEntity.getProductArticleEntity()) {
             Optional<ArticleEntity> articleEntityOptional = articleRepository.findByArticleId(productArticleEntity.getArticleId());
             if(!articleEntityOptional.isPresent()) {
                 throw new ArticleNotFoundException(productArticleEntity.getArticleId());
@@ -116,10 +115,6 @@ public class ProductServiceImpl implements ProductService {
                     articleEntityOptional.get().getStock().getStock().intValue(),
                     articleEntityOptional.get().getStock().getStock().intValue() - productArticleEntity.getAmountOf()));
         }
-        ProductDTO productDTO = new ProductDTO();
-        productDTO.setId(productEntityOptional.get().getId());
-        productDTO.setName(productEntityOptional.get().getName());
-        productDTO.setQuantity((long)thisProductQuantity);
-        return Optional.of(productDTO);
+        return Long.valueOf((long) thisProductQuantity);
     }
 }
