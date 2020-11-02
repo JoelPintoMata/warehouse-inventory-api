@@ -28,6 +28,7 @@ public class ProductsDataLoaderImpl implements DataLoader {
 
     // order in which this data should be loaded, consider foreign keys
     private static final Long ORDER = 2L;
+    // Observer design pattern where this loader registers itself in the load manager
     private ObjectMapper objectMapper;
     private ProductRepository productRepository;
 
