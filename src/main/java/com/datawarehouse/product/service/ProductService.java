@@ -2,11 +2,11 @@ package com.datawarehouse.product.service;
 
 import com.datawarehouse.article.exception.ArticleNotFoundException;
 import com.datawarehouse.article.stock.exception.InsufficientStockException;
-import com.datawarehouse.loader.products.dto.LoadedProductDTO;
 import com.datawarehouse.product.dto.ProductDTO;
 import com.datawarehouse.product.entity.ProductEntity;
 import com.datawarehouse.product.exception.ProductNotFoundException;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -14,11 +14,13 @@ import java.util.Optional;
  */
 public interface ProductService {
 
+    Optional<ProductDTO> findById(Long id);
+
     /**
      * Retrieves the current product availability
      * @return a list of product and their available quantities in stock
      */
-    Iterable<ProductDTO> availability();
+    List<ProductDTO> availability();
 
     /**
      * Sells a product
@@ -29,5 +31,5 @@ public interface ProductService {
      * @throws InsufficientStockException   there are not enough articles, making of the product, to allow the selling operation to proceed
      * @throws ProductNotFoundException     the given product id is not found
      */
-    Optional<ProductDTO> sell(Long id) throws ArticleNotFoundException, InsufficientStockException, ProductNotFoundException;
+    ProductDTO sell(Long id) throws ArticleNotFoundException, InsufficientStockException, ProductNotFoundException;
 }

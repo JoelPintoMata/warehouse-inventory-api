@@ -42,8 +42,4 @@ public class ProductEntity {
     public Set<ProductArticleEntity> getProductArticleEntity() {
         return this.productArticle;
     }
-
-    public void setProductArticleEntity(final Set<ProductArticleEntity> productArticle) {
-        this.productArticle = productArticle;
-    }
 }

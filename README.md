@@ -34,3 +34,9 @@ curl http://localhost:8080/articles
 ### Data model
 Check `schema.sql` file under resources folder
 
+### Left to finish
+- Input validation
+- Load data validation
+- HTTP to https
+
+

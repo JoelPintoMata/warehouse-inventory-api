@@ -9,6 +9,7 @@ import com.datawarehouse.product.dto.ProductDTO;
 import com.datawarehouse.product.entity.ProductEntity;
 import com.datawarehouse.product.exception.ProductNotFoundException;
 import com.datawarehouse.product.repository.ProductRepository;
+import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,37 +32,48 @@ public class ProductServiceImpl implements ProductService {
     private ProductRepository productRepository;
     private ArticleRepository articleRepository;
 
+    private ModelMapper modelMapper;
+
     @Autowired
     public ProductServiceImpl(ProductRepository productRepository,
                               ArticleRepository articleRepository) {
         this.productRepository = productRepository;
         this.articleRepository = articleRepository;
+
+        modelMapper = new ModelMapper();
     }
 
     @Override
-    public Iterable<ProductDTO> availability() {
-        List<ProductDTO> result = new ArrayList<>();
+    public Optional<ProductDTO> findById(Long id) {
+        LOGGER.info(String.format("Retrieving product: {}", id));
+
+        Optional<ProductEntity> productEntityOptional = productRepository.findById(id);
+        if (productEntityOptional.isPresent())
+            return Optional.of(convertToDto(productEntityOptional.get()));
+        return Optional.empty();
+    }
+
+    @Override
+    public List<ProductDTO> availability() {
         LOGGER.info(String.format("Retrieving available products"));
-
         Iterable<ProductEntity> productEntityIterable = productRepository.findAll();
-
-        Iterator<ProductEntity> iterator = productEntityIterable.iterator();
-        while(iterator.hasNext()) {
-            ProductEntity productEntity = iterator.next();
-            result.add(new ProductDTO.ProductDTOBuilder().
-                    setId(productEntity.getId()).
-                    setName(productEntity.getName()).
-                    setQuantity(getQuantity(productEntity)).
-                    build()
-            );
+        Iterator<ProductEntity> productEntityIterator = productEntityIterable.iterator();
+        
+        List<ProductDTO> productDTOList = new ArrayList<>();
+        ProductEntity productEntity;
+        ProductDTO productDTO;
+        while (productEntityIterator.hasNext()) {
+            productEntity = productEntityIterator.next();
+            productDTO = convertToDto(productEntity);
+            productDTOList.add(productDTO);
         }
-        return result;
+        return productDTOList;
     }
 
     @Transactional(rollbackFor = {ArticleNotFoundException.class,
             InsufficientStockException.class})
     @Override
-    public Optional<ProductDTO> sell(Long id) throws ArticleNotFoundException, InsufficientStockException, ProductNotFoundException {
+    public ProductDTO sell(Long id) throws ArticleNotFoundException, InsufficientStockException, ProductNotFoundException {
         LOGGER.info(String.format("Selling product_id %s", id));
 
         Optional<ProductEntity> productEntityOptional = productRepository.findById(id);
@@ -86,12 +98,13 @@ public class ProductServiceImpl implements ProductService {
                     articleEntityOptional.get().getStock().getStock().intValue() - productArticleEntity.getAmountOf()));
         }
 
-        return Optional.of(new ProductDTO.ProductDTOBuilder().
-                setId(productEntityOptional.get().getId()).
-                setName(productEntityOptional.get().getName()).
-                setQuantity(getQuantity(productEntityOptional.get())).
-                build()
-        );
+        return convertToDto(productEntity);
+    }
+
+    private ProductDTO convertToDto(ProductEntity productEntity) {
+        ProductDTO productDTO = modelMapper.map(productEntity, ProductDTO.class);
+        productDTO.setQuantity(getQuantity(productEntity));
+        return productDTO;
     }
 
     /**

@@ -96,9 +96,7 @@ public class ProductServiceImplTest {
         productEntityList.add(productEntity);
         when(productRepository.findAll()).thenReturn(productEntityList);
 
-        List<ProductDTO> productDTOList = StreamSupport
-                .stream(productService.availability().spliterator(), false)
-                .collect(Collectors.toList());
+        List<ProductDTO> productDTOList = productService.availability();
 
         assertEquals(productEntityList.size(), productDTOList.size());
         assertEquals(3, productDTOList.get(0).getQuantity().intValue());
@@ -119,9 +117,7 @@ public class ProductServiceImplTest {
         productEntityList.add(productEntity);
         when(productRepository.findAll()).thenReturn(productEntityList);
 
-        List<ProductDTO> productDTOList = StreamSupport
-                .stream(productService.availability().spliterator(), false)
-                .collect(Collectors.toList());
+        List<ProductDTO> productDTOList = productService.availability();
 
         assertEquals(productEntityList.size(), productDTOList.size());
         assertEquals(0, productDTOList.get(0).getQuantity().intValue());
@@ -243,15 +239,15 @@ public class ProductServiceImplTest {
         when(articleRepository.findByArticleId(productArticleEntity.getArticleId())).thenReturn(Optional.of(articleEntity));
 
         boolean flag = false;
-        Optional<ProductDTO> productDTOOptional = null;
+        ProductDTO productDTO = null;
         try {
-            productDTOOptional = productService.sell(1L);
+            productDTO = productService.sell(1L);
         } catch (Exception e) {
             flag = true;
         }
         assertFalse(flag);
-        assertNotNull(productDTOOptional);
-        assertEquals(productEntity.getId(), productDTOOptional.get().getId());
-        assertEquals(5, productDTOOptional.get().getQuantity().intValue());
+        assertNotNull(productDTO);
+        assertEquals(productEntity.getId(), productDTO.getId());
+        assertEquals(5, productDTO.getQuantity().intValue());
     }
 }
