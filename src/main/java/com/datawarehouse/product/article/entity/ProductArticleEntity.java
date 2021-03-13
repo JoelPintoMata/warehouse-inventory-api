@@ -52,4 +52,5 @@ public class ProductArticleEntity {
     public void setAmountOf(final long amountOf) {
         this.amountOf = amountOf;
     }
+
 }

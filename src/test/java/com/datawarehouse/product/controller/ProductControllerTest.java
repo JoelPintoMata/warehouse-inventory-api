@@ -3,23 +3,17 @@ package com.datawarehouse.product.controller;
 import com.datawarehouse.article.exception.ArticleNotFoundException;
 import com.datawarehouse.article.stock.exception.InsufficientStockException;
 import com.datawarehouse.product.dto.ProductDTO;
-import com.datawarehouse.product.entity.ProductEntity;
 import com.datawarehouse.product.service.ProductServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hamcrest.Matchers;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.HttpStatus;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,18 +24,17 @@ import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(SpringRunner.class)
 @WebMvcTest(ProductController.class)
 public class ProductControllerTest {
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     @Autowired
     private MockMvc mockMvc;
 
     @MockBean
     private ProductServiceImpl productService;
+
+    @SpyBean
+    private ProductDTOModelAssembler productDTOModelAssembler;
 
     public static String asJsonString(final Object obj) {
         try {
@@ -91,7 +84,7 @@ public class ProductControllerTest {
     }
 
     @Test
-    public void givenProductId_whenSellProductAndNoArticleStock_thenUnprocessableEntity() throws
+    public void givenProductId_whenSellProductAndNoArticleStock_thenProcessableEntity() throws
             Exception {
         ProductDTO productDTO = new ProductDTO();
         productDTO.setId(999L);
@@ -120,7 +113,7 @@ public class ProductControllerTest {
     }
 
     @Test
-    public void givenUnexistingProductId_whenSellProduct_thenNotFound() throws Exception {
+    public void givenUnExistingProductId_whenSellProduct_thenNotFound() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.delete("/products/999")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());

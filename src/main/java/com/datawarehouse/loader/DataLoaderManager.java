@@ -1,7 +1,6 @@
 package com.datawarehouse.loader;
 
 import com.datawarehouse.loader.exception.DataLoaderException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -13,7 +12,6 @@ public class DataLoaderManager {
 
     private List<DataLoader> dataLoaderList;
 
-    @Autowired
     public DataLoaderManager() {
         this.dataLoaderList = new ArrayList<>(2);
     }

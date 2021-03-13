@@ -1,10 +1,8 @@
 package com.datawarehouse.product.controller;
 
-import com.datawarehouse.article.exception.ArticleNotFoundException;
 import com.datawarehouse.article.stock.exception.InsufficientStockException;
 import com.datawarehouse.product.dto.ProductDTO;
 import com.datawarehouse.product.entity.ProductEntity;
-import com.datawarehouse.product.exception.ProductNotFoundException;
 import com.datawarehouse.product.service.ProductService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +13,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -30,9 +30,9 @@ public class ProductController {
     private ProductDTOModelAssembler assembler;
 
     @Autowired
-    public ProductController(ProductService productService, ProductDTOModelAssembler assembler) {
+    public ProductController(ProductService productService, ProductDTOModelAssembler productDTOModelAssembler) {
         this.productService = productService;
-        this.assembler = assembler;
+        this.assembler = productDTOModelAssembler;
     }
 
     @GetMapping("/products/{id}")
@@ -40,13 +40,13 @@ public class ProductController {
     public ResponseEntity<EntityModel<ProductDTO>> findById(@PathVariable Long id) {
         Optional<ProductDTO> productDTOOptional = productService.findById(id);
 
-        EntityModel<ProductDTO> entityModel = null;
+        EntityModel<ProductDTO> entityModel;
         ResponseEntity<EntityModel<ProductDTO>> entityModelResponseEntity;
         if (productDTOOptional.isPresent()) {
             entityModel = assembler.toModel(productDTOOptional.get());
             entityModelResponseEntity = ResponseEntity.ok(entityModel);
         } else {
-            entityModelResponseEntity = ResponseEntity.status(HttpStatus.NOT_FOUND).body(entityModel);
+            entityModelResponseEntity = ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
         return entityModelResponseEntity;
     }

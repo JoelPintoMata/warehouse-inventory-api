@@ -45,7 +45,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public Optional<ProductDTO> findById(Long id) {
-        LOGGER.info(String.format("Retrieving product: {}", id));
+        LOGGER.info("Retrieving product: {}", id);
 
         Optional<ProductEntity> productEntityOptional = productRepository.findById(id);
         if (productEntityOptional.isPresent())
@@ -55,7 +55,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public List<ProductDTO> availability() {
-        LOGGER.info(String.format("Retrieving available products"));
+        LOGGER.info("Retrieving available products");
         Iterable<ProductEntity> productEntityIterable = productRepository.findAll();
         Iterator<ProductEntity> productEntityIterator = productEntityIterable.iterator();
         

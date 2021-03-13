@@ -5,7 +5,7 @@ import com.datawarehouse.article.entity.ArticleEntity;
 import com.datawarehouse.article.repository.ArticleRepository;
 import com.datawarehouse.product.article.entity.ProductArticleEntity;
 import com.datawarehouse.product.entity.ProductEntity;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
@@ -62,11 +62,11 @@ class ProductRepositoryTest extends BaseTest {
 
         List<ProductEntity> productEntityList = new ArrayList<>();
         productRepository.findAll().iterator().forEachRemaining(productEntityList::add);
-        Assert.assertNotNull(productEntityList);
-        Assert.assertEquals(2, productEntityList.size());
+        Assertions.assertNotNull(productEntityList);
+        Assertions.assertEquals(2, productEntityList.size());
 
         Optional<ProductEntity> product = productRepository.findById(productEntity1.getId());
-        Assert.assertNotNull(product);
-        Assert.assertEquals(2, product.get().getProductArticleEntity().size());
+        Assertions.assertNotNull(product);
+        Assertions.assertEquals(2, product.get().getProductArticleEntity().size());
     }
 }

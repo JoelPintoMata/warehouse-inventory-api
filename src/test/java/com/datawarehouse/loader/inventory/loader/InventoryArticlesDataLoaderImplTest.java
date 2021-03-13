@@ -1,5 +1,6 @@
 package com.datawarehouse.loader.inventory.loader;
 
+import com.datawarehouse.Main;
 import com.datawarehouse.article.entity.ArticleEntity;
 import com.datawarehouse.article.repository.ArticleRepository;
 import com.datawarehouse.loader.DataLoaderManager;
@@ -7,24 +8,21 @@ import com.datawarehouse.loader.exception.DataLoaderException;
 import com.datawarehouse.loader.inventory.dto.LoadedInventoryArticleDTO;
 import com.datawarehouse.loader.inventory.dto.LoadedInventoryArticlesDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
+@SpringBootTest(classes = Main.class)
 public class InventoryArticlesDataLoaderImplTest {
 
     @InjectMocks
@@ -48,7 +46,7 @@ public class InventoryArticlesDataLoaderImplTest {
         } catch (Exception e) {
             flag = true;
         }
-        assertTrue(flag);
+        Assertions.assertTrue(flag);
     }
 
     @Test
@@ -67,9 +65,9 @@ public class InventoryArticlesDataLoaderImplTest {
 
         ArgumentCaptor<ArticleEntity> articleEntityArgumentCaptor = ArgumentCaptor.forClass(ArticleEntity.class);
         verify(articleRepository, timeout(1)).save(articleEntityArgumentCaptor.capture());
-        assertEquals(inventoryArticleDTO.getName(), articleEntityArgumentCaptor.getValue().getName());
-        assertEquals(inventoryArticleDTO.getStock(), articleEntityArgumentCaptor.getValue().getStock().getStock());
-        assertEquals(inventoryArticleDTO.
+        Assertions.assertEquals(inventoryArticleDTO.getName(), articleEntityArgumentCaptor.getValue().getName());
+        Assertions.assertEquals(inventoryArticleDTO.getStock(), articleEntityArgumentCaptor.getValue().getStock().getStock());
+        Assertions.assertEquals(inventoryArticleDTO.
                         getArticleId().longValue(),
                 articleEntityArgumentCaptor.getValue().
                         getArticleId());

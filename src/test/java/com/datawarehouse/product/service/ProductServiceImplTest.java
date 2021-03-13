@@ -1,5 +1,6 @@
 package com.datawarehouse.product.service;
 
+import com.datawarehouse.Main;
 import com.datawarehouse.article.entity.ArticleEntity;
 import com.datawarehouse.article.exception.ArticleNotFoundException;
 import com.datawarehouse.article.repository.ArticleRepository;
@@ -10,25 +11,23 @@ import com.datawarehouse.product.dto.ProductDTO;
 import com.datawarehouse.product.entity.ProductEntity;
 import com.datawarehouse.product.exception.ProductNotFoundException;
 import com.datawarehouse.product.repository.ProductRepository;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
+@SpringBootTest(classes = Main.class)
 public class ProductServiceImplTest {
 
     @InjectMocks
@@ -40,7 +39,7 @@ public class ProductServiceImplTest {
     @Mock
     private ArticleRepository articleRepository;
 
-    @Before
+    @BeforeEach
     public void init() {
         MockitoAnnotations.initMocks(this);
     }
@@ -98,8 +97,8 @@ public class ProductServiceImplTest {
 
         List<ProductDTO> productDTOList = productService.availability();
 
-        assertEquals(productEntityList.size(), productDTOList.size());
-        assertEquals(3, productDTOList.get(0).getQuantity().intValue());
+        Assertions.assertEquals(productEntityList.size(), productDTOList.size());
+        Assertions.assertEquals(3, productDTOList.get(0).getQuantity().intValue());
     }
 
     @Test
@@ -119,19 +118,14 @@ public class ProductServiceImplTest {
 
         List<ProductDTO> productDTOList = productService.availability();
 
-        assertEquals(productEntityList.size(), productDTOList.size());
-        assertEquals(0, productDTOList.get(0).getQuantity().intValue());
+        Assertions.assertEquals(productEntityList.size(), productDTOList.size());
+        Assertions.assertEquals(0, productDTOList.get(0).getQuantity().intValue());
     }
 
     @Test
-    public void givenNoProductInDatabase_wheSell_thenNotFound() throws ArticleNotFoundException, InsufficientStockException {
-        boolean flag = false;
-        try {
-            productService.sell(1L);
-        } catch (ProductNotFoundException e) {
-            flag = true;
-        }
-        assertTrue(flag);
+    public void givenNoProductInDatabase_wheSell_thenNotFound() {
+        assertThrows(ProductNotFoundException.class, () ->
+                productService.sell(1L));
     }
 
     @Test
@@ -145,13 +139,8 @@ public class ProductServiceImplTest {
         productEntity.getProductArticleEntity().add(productArticleEntity);
         when(productRepository.findById(any())).thenReturn(Optional.of(productEntity));
 
-        boolean flag = false;
-        try {
-            productService.sell(1L);
-        } catch (ArticleNotFoundException e) {
-            flag = true;
-        }
-        assertTrue(flag);
+        assertThrows(ArticleNotFoundException.class, () ->
+                productService.sell(1L));
     }
 
     @Test
@@ -169,13 +158,8 @@ public class ProductServiceImplTest {
         articleEntity.setId(1L);
         when(articleRepository.findByArticleId(productArticleEntity.getArticleId())).thenReturn(Optional.of(articleEntity));
 
-        boolean flag = false;
-        try {
-            productService.sell(1L);
-        } catch (InsufficientStockException e) {
-            flag = true;
-        }
-        assertTrue(flag);
+        assertThrows(InsufficientStockException.class, () ->
+                productService.sell(1L));
     }
 
     @Test
@@ -208,13 +192,8 @@ public class ProductServiceImplTest {
         articleEntity.setStock(stockEntity);
         when(articleRepository.findByArticleId(articleEntity.getId())).thenReturn(Optional.of(articleEntity));
 
-        boolean flag = false;
-        try {
-            productService.sell(1L);
-        } catch (InsufficientStockException e) {
-            flag = true;
-        }
-        assertTrue(flag);
+        assertThrows(InsufficientStockException.class, () ->
+                productService.sell(1L));
     }
 
     @Test
@@ -245,9 +224,9 @@ public class ProductServiceImplTest {
         } catch (Exception e) {
             flag = true;
         }
-        assertFalse(flag);
-        assertNotNull(productDTO);
-        assertEquals(productEntity.getId(), productDTO.getId());
-        assertEquals(5, productDTO.getQuantity().intValue());
+        Assertions.assertFalse(flag);
+        Assertions.assertNotNull(productDTO);
+        Assertions.assertEquals(productEntity.getId(), productDTO.getId());
+        Assertions.assertEquals(5, productDTO.getQuantity().intValue());
     }
 }
